@@ -1,0 +1,55 @@
+# Traefik routing for Pretium OpenCPO exploration.
+# DNS needed:
+#   cpo.pretiumsynergy.co.uk      -> operator admin
+#   app.cpo.pretiumsynergy.co.uk  -> driver PWA (QR links)
+#   ocpp.cpo.pretiumsynergy.co.uk -> OCPP 1.6J WebSocket (charger URL)
+
+services:
+  cpo-admin:
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.pretium-cpo-admin.rule=Host(`cpo.pretiumsynergy.co.uk`)
+      - traefik.http.routers.pretium-cpo-admin.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-admin.tls.certresolver=letsencrypt
+      # Authentik staff gate (pretium-staff). app.cpo and ocpp.cpo stay open.
+      - traefik.http.routers.pretium-cpo-admin.middlewares=authentik-cpo@file
+      - traefik.http.services.pretium-cpo-admin.loadbalancer.server.port=8080
+
+  charge-app:
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.pretium-cpo-app.rule=Host(`app.cpo.pretiumsynergy.co.uk`)
+      - traefik.http.routers.pretium-cpo-app.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-app.tls.certresolver=letsencrypt
+      - traefik.http.services.pretium-cpo-app.loadbalancer.server.port=8003
+
+  ocpp-core:
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.pretium-cpo-ocpp.rule=Host(`ocpp.cpo.pretiumsynergy.co.uk`)
+      - traefik.http.routers.pretium-cpo-ocpp.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-ocpp.tls.certresolver=letsencrypt
+      - traefik.http.services.pretium-cpo-ocpp.loadbalancer.server.port=9100
+      - traefik.http.routers.pretium-cpo-ocpp.service=pretium-cpo-ocpp
+      # Stripe webhook only. Exact path, no Authentik, no other core API routes.
+      - "traefik.http.routers.pretium-cpo-pay.rule=Host(`pay.cpo.pretiumsynergy.co.uk`) && Path(`/api/payments/webhook`)"
+      - traefik.http.routers.pretium-cpo-pay.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-pay.tls.certresolver=letsencrypt
+      - traefik.http.services.pretium-cpo-pay.loadbalancer.server.port=8000
+      - traefik.http.routers.pretium-cpo-pay.service=pretium-cpo-pay
+
+networks:
+  traefik-net:
+    external: true

@@ -1,0 +1,23 @@
+# Pretium VPS: no host port bindings (Traefik only). Skip simulators.
+
+services:
+  postgres:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  ocpp-core:
+    ports: !reset []
+
+  cpo-admin:
+    ports: !reset []
+
+  charge-app:
+    ports: !reset []
+
+  compliance-tester:
+    profiles: ["tools"]
+
+  charger-farm:
+    profiles: ["tools"]

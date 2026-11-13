@@ -65,6 +65,7 @@ services:
       BACKUP_DIR: /app/backups
       DB_UTILS: /app/opencpo/scripts/db-utils.sh
       CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
