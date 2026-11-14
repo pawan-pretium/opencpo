@@ -3,6 +3,7 @@
 #   cpo.pretiumsynergy.co.uk      -> operator admin
 #   app.cpo.pretiumsynergy.co.uk  -> driver PWA (QR links)
 #   ocpp.cpo.pretiumsynergy.co.uk -> OCPP 1.6J WebSocket (charger URL)
+#   ocpi.cpo.pretiumsynergy.co.uk -> OCPI roaming (/ocpi only)
 
 services:
   cpo-admin:
@@ -49,6 +50,13 @@ services:
       - traefik.http.routers.pretium-cpo-pay.tls.certresolver=letsencrypt
       - traefik.http.services.pretium-cpo-pay.loadbalancer.server.port=8000
       - traefik.http.routers.pretium-cpo-pay.service=pretium-cpo-pay
+      # OCPI roaming for partners. /ocpi paths only, token-authenticated by the
+      # core. No Authentik, no Basic Auth, no management routes on this host.
+      - "traefik.http.routers.pretium-cpo-ocpi.rule=Host(`ocpi.cpo.pretiumsynergy.co.uk`) && PathPrefix(`/ocpi`)"
+      - traefik.http.routers.pretium-cpo-ocpi.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-ocpi.tls.certresolver=letsencrypt
+      - traefik.http.services.pretium-cpo-ocpi.loadbalancer.server.port=8000
+      - traefik.http.routers.pretium-cpo-ocpi.service=pretium-cpo-ocpi
 
 networks:
   traefik-net:

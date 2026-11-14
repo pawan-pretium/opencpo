@@ -67,6 +67,13 @@ services:
       CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      # Lago billing. The key is set in .env; the URL defaults to Lago cloud.
+      LAGO_API_KEY: ${LAGO_API_KEY:-}
+      LAGO_API_URL: ${LAGO_API_URL:-https://api.getlago.com}
+      # OCPI roaming. Public base URL that partners call; only /ocpi is routed there.
+      OCPI_BASE_URL: ${OCPI_BASE_URL:-https://ocpi.cpo.pretiumsynergy.co.uk}
+      OCPI_COUNTRY_CODE: ${OCPI_COUNTRY_CODE:-GB}
+      OCPI_PARTY_ID: ${OCPI_PARTY_ID:-PRS}
       CHARGE_APP_URL: ${CHARGE_APP_URL:-https://app.cpo.pretiumsynergy.co.uk}
       PKI_ORG_NAME: ${PKI_ORG_NAME:-Pretium Synergy Ltd.}
       PKI_ROOT_CA_CN: ${PKI_ROOT_CA_CN:-Pretium Synergy Ltd. Root CA}
