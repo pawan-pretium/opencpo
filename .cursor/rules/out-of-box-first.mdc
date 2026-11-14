@@ -1,0 +1,13 @@
+---
+description: Start from shipped OpenCPO functionality. An example is not a Pretium requirement.
+alwaysApply: true
+---
+
+# Out of the box first
+
+An example, scenario or named person is context for understanding. It is not a requirement to build.
+
+1. State what OpenCPO already ships that bears on the question, with the feature ID when the canvas has one.
+2. Say how that shipped function can be used for Pretium.
+3. Ask which of those shipped options to use.
+4. Only after the shipped options are exhausted, and only when Admin asks for new work, describe a gap. Do not add it to the implementation plan as a desired requirement unless Admin says it is one.
