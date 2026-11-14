@@ -18,6 +18,11 @@ services:
 
   compliance-tester:
     profiles: ["tools"]
+    restart: "no"
+    ports: !override
+      - "127.0.0.1:8090:8090"
 
   charger-farm:
     profiles: ["tools"]
+    ports: !override
+      - "127.0.0.1:8087:8087"

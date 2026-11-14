@@ -66,6 +66,9 @@ services:
       DB_UTILS: /app/opencpo/scripts/db-utils.sh
       CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      CHARGE_APP_URL: ${CHARGE_APP_URL:-https://app.cpo.pretiumsynergy.co.uk}
+      PKI_ORG_NAME: ${PKI_ORG_NAME:-Pretium Synergy Ltd.}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
@@ -76,6 +79,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./:/app/opencpo:rw
       - backup-data:/app/backups
+      - pki-data:/app/data/pki
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
@@ -144,4 +148,6 @@ volumes:
   pgdata:
     driver: local
   backup-data:
+    driver: local
+  pki-data:
     driver: local
