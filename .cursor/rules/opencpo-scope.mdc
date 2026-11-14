@@ -1,20 +1,23 @@
 ---
-description: OpenCPO workspace scope for HK/Lead/opencpo and HK/Member/opencpo
+description: OpenCPO workspace scope for the architect, dev, test and operations chats
 alwaysApply: true
 ---
 
 # Pretium OpenCPO workspace
 
-- RTL-HK (Hostinger). Workspace root: `/docker/pretium-opencpo`. Same repo for Lead and Member; separate chats.
-- **Lead** chat title: `HK/Lead/opencpo` — requirements, config, build, Tridens→OpenCPO migration. Start: `pretiumsynergy-deploy/docs/handoffs/2026-11-13-opencpo-migration-programme.md` (ops: `2026-11-13-opencpo-agent-brief.md`).
-- **Member** chat title: `HK/Member/opencpo` — independent test and acceptance only. Start: `pretiumsynergy-deploy/docs/handoffs/2026-11-13-opencpo-member-test-brief.md`.
+- RTL-HK (Hostinger). Workspace root: `/docker/pretium-opencpo`. Same repo for all four OpenCPO chats; separate chats.
+- **Solution architect** chat title: `HK/Lead/opencpo-architect` — strategy, solution design, backlog with Admin, build briefs, test direction, Tridens→OpenCPO migration design. Start: `pretiumsynergy-deploy/docs/handoffs/2026-11-14-opencpo-solution-architect-handoff.md`.
+- **Dev** chat title: `HK/Dev/opencpo` — builds an approved brief, checks its own work, then offers the build to Test. Commits and deploys only after the architect has approved the build against the brief.
+- **Test** chat title: `HK/Test/opencpo` — test strategy, plan and cases, as the architect directs. Signs acceptance of a feature when its test passes. Start: `pretiumsynergy-deploy/docs/handoffs/2026-11-13-opencpo-member-test-brief.md`.
+- **Operations** chat title: `HK/Operations/opencpo` — runs the live system (add a charger, reports, alerts). New behaviour goes to the architect first. Pricing, tariff, visibility and billing changes need Admin approval.
 - Pinned scopes: `pretiumsynergy-deploy/docs/chat-scope-pins.md`.
 - Start and stop only with the three files: `docker-compose.yml`, `docker-compose.pretium.yml`, `docker-compose.traefik.yml`.
 - Do not move or rename this folder. Volume names (`pretium-opencpo_pgdata`) come from it.
 - Back up `pretium-opencpo_pgdata` before any upgrade, migration or `down -v`. Never run `down -v` without Admin approval.
 - `cpo.` is behind Authentik (`pretium-staff`). `app.cpo.` and `ocpp.cpo.` must never get Authentik or Basic Auth: drivers and chargers use them. `ocpp.cpo` is WebSocket port 9100 only — do not publish the management API there until open reads are locked.
 - `.env` is Admin-owned. Never print or edit secret values.
-- Lead does not mark pilot or cutover accepted; Member owns that gate.
-- Member does not change compose/Traefik/Authentik or migration design without Lead.
+- Architect and Dev do not mark a feature accepted. Test owns that gate.
+- Admin signs any move of a charger off Tridens. No other chat marks cutover.
+- Dev and Operations do not change compose, Traefik or Authentik. That change needs the architect and Admin approval.
 - Follow the mandatory cycle: Preview, Approve, Commit, Deploy by Agent, Verify, then the post-deploy resource check.
 - Source CPO until cutover: `pretium-cpo.tridenstechnology.com` (Tridens white-label).
