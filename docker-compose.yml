@@ -69,6 +69,8 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       CHARGE_APP_URL: ${CHARGE_APP_URL:-https://app.cpo.pretiumsynergy.co.uk}
       PKI_ORG_NAME: ${PKI_ORG_NAME:-Pretium Synergy Ltd.}
+      PKI_ROOT_CA_CN: ${PKI_ROOT_CA_CN:-Pretium Synergy Ltd. Root CA}
+      PKI_USER_CA_CN: ${PKI_USER_CA_CN:-Pretium Synergy Ltd. User CA}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
