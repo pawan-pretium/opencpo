@@ -1,5 +1,6 @@
 # Environment
 .env
+.env.lago
 
 # Component repos (cloned by setup.sh)
 opencpo-core/

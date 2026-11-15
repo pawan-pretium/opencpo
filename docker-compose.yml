@@ -67,9 +67,9 @@ services:
       CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      # Lago billing. The key is set in .env; the URL defaults to Lago cloud.
+      # Lago billing. Key in .env line 47; URL is the in-stack API (not Lago Cloud).
       LAGO_API_KEY: ${LAGO_API_KEY:-}
-      LAGO_API_URL: ${LAGO_API_URL:-https://api.getlago.com}
+      LAGO_API_URL: ${LAGO_API_URL:-http://lago-api:3000}
       # OCPI roaming. Public base URL that partners call; only /ocpi is routed there.
       OCPI_BASE_URL: ${OCPI_BASE_URL:-https://ocpi.cpo.pretiumsynergy.co.uk}
       OCPI_COUNTRY_CODE: ${OCPI_COUNTRY_CODE:-GB}
@@ -153,10 +153,124 @@ services:
       OCPP201_URL: ws://ocpp-core:9201
       FARM_UI_PORT: 8087
 
+  # ── Lago billing (pin v1.57.0; own DB/Redis; secrets in .env.lago) ─────────
+
+  lago-db:
+    image: getlago/postgres-partman:15.0-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.lago
+    environment:
+      POSTGRES_DB: lago
+      POSTGRES_USER: lago
+      PGDATA: /data/postgres
+    volumes:
+      - lago_pgdata:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lago -d lago -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  lago-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - lago_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  lago-migrate:
+    image: getlago/api:v1.57.0
+    env_file:
+      - .env.lago
+    depends_on:
+      lago-db:
+        condition: service_healthy
+    command: ["./scripts/migrate.sh"]
+    restart: "on-failure"
+
+  lago-api:
+    image: getlago/api:v1.57.0
+    restart: unless-stopped
+    env_file:
+      - .env.lago
+    depends_on:
+      lago-migrate:
+        condition: service_completed_successfully
+      lago-db:
+        condition: service_healthy
+      lago-redis:
+        condition: service_healthy
+    command: ["./scripts/start.api.sh"]
+    volumes:
+      - lago_storage:/app/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+  lago-front:
+    image: getlago/front:v1.57.0
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    env_file:
+      - .env.lago
+    depends_on:
+      lago-api:
+        condition: service_healthy
+
+  lago-worker:
+    image: getlago/api:v1.57.0
+    restart: unless-stopped
+    env_file:
+      - .env.lago
+    depends_on:
+      lago-migrate:
+        condition: service_completed_successfully
+      lago-db:
+        condition: service_healthy
+      lago-redis:
+        condition: service_healthy
+    command: ["./scripts/start.worker.sh"]
+    volumes:
+      - lago_storage:/app/storage
+
+  lago-clock:
+    image: getlago/api:v1.57.0
+    restart: unless-stopped
+    env_file:
+      - .env.lago
+    depends_on:
+      lago-migrate:
+        condition: service_completed_successfully
+      lago-db:
+        condition: service_healthy
+      lago-redis:
+        condition: service_healthy
+    command: ["./scripts/start.clock.sh"]
+
+  lago-pdf:
+    image: ghcr.io/getlago/lago-gotenberg:8.39
+    restart: unless-stopped
+
 volumes:
   pgdata:
     driver: local
   backup-data:
     driver: local
   pki-data:
+    driver: local
+  lago_pgdata:
+    driver: local
+  lago_redis_data:
+    driver: local
+  lago_storage:
     driver: local

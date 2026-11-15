@@ -1,9 +1,10 @@
 # Traefik routing for Pretium OpenCPO exploration.
 # DNS needed:
-#   cpo.pretiumsynergy.co.uk      -> operator admin
-#   app.cpo.pretiumsynergy.co.uk  -> driver PWA (QR links)
-#   ocpp.cpo.pretiumsynergy.co.uk -> OCPP 1.6J WebSocket (charger URL)
-#   ocpi.cpo.pretiumsynergy.co.uk -> OCPI roaming (/ocpi only)
+#   cpo.pretiumsynergy.co.uk         -> operator admin
+#   app.cpo.pretiumsynergy.co.uk     -> driver PWA (QR links)
+#   ocpp.cpo.pretiumsynergy.co.uk    -> OCPP 1.6J WebSocket (charger URL)
+#   ocpi.cpo.pretiumsynergy.co.uk    -> OCPI roaming (/ocpi only)
+#   billing.cpo.pretiumsynergy.co.uk -> Lago staff UI (Authentik)
 
 services:
   cpo-admin:
@@ -57,6 +58,49 @@ services:
       - traefik.http.routers.pretium-cpo-ocpi.tls.certresolver=letsencrypt
       - traefik.http.services.pretium-cpo-ocpi.loadbalancer.server.port=8000
       - traefik.http.routers.pretium-cpo-ocpi.service=pretium-cpo-ocpi
+
+  # Lago staff UI + browser API path. Same Authentik gate as cpo.
+  # API is not a separate public host; PathPrefix /api on billing.cpo only.
+  lago-front:
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.pretium-cpo-billing.rule=Host(`billing.cpo.pretiumsynergy.co.uk`)
+      - traefik.http.routers.pretium-cpo-billing.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-billing.tls.certresolver=letsencrypt
+      - traefik.http.routers.pretium-cpo-billing.middlewares=authentik-cpo@file
+      - traefik.http.services.pretium-cpo-billing.loadbalancer.server.port=8080
+
+  lago-api:
+    networks:
+      - default
+      - traefik-net
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-net
+      - "traefik.http.routers.pretium-cpo-billing-api.rule=Host(`billing.cpo.pretiumsynergy.co.uk`) && PathPrefix(`/api`)"
+      - traefik.http.routers.pretium-cpo-billing-api.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-billing-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.pretium-cpo-billing-api.middlewares=authentik-cpo@file
+      - traefik.http.routers.pretium-cpo-billing-api.priority=100
+      - traefik.http.services.pretium-cpo-billing-api.loadbalancer.server.port=3000
+      - traefik.http.routers.pretium-cpo-billing-api.service=pretium-cpo-billing-api
+      # The staff UI posts to /graphql on this host. The front container cannot serve it.
+      - "traefik.http.routers.pretium-cpo-billing-graphql.rule=Host(`billing.cpo.pretiumsynergy.co.uk`) && PathPrefix(`/graphql`)"
+      - traefik.http.routers.pretium-cpo-billing-graphql.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-billing-graphql.tls.certresolver=letsencrypt
+      - traefik.http.routers.pretium-cpo-billing-graphql.middlewares=authentik-cpo@file
+      - traefik.http.routers.pretium-cpo-billing-graphql.priority=100
+      - traefik.http.routers.pretium-cpo-billing-graphql.service=pretium-cpo-billing-api
+      - "traefik.http.routers.pretium-cpo-billing-cable.rule=Host(`billing.cpo.pretiumsynergy.co.uk`) && PathPrefix(`/cable`)"
+      - traefik.http.routers.pretium-cpo-billing-cable.entrypoints=websecure
+      - traefik.http.routers.pretium-cpo-billing-cable.tls.certresolver=letsencrypt
+      - traefik.http.routers.pretium-cpo-billing-cable.middlewares=authentik-cpo@file
+      - traefik.http.routers.pretium-cpo-billing-cable.priority=100
+      - traefik.http.routers.pretium-cpo-billing-cable.service=pretium-cpo-billing-api
 
 networks:
   traefik-net:
