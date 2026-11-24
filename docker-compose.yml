@@ -67,6 +67,8 @@ services:
       CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      # Pilot: prepaid/card sessions skip Lago; Stripe is the ledger. Default off.
+      STRIPE_LEDGER_FOR_PREPAID: ${STRIPE_LEDGER_FOR_PREPAID:-}
       # Lago billing. Key in .env line 47; URL is the in-stack API (not Lago Cloud).
       LAGO_API_KEY: ${LAGO_API_KEY:-}
       LAGO_API_URL: ${LAGO_API_URL:-http://lago-api:3000}
@@ -78,6 +80,7 @@ services:
       PKI_ORG_NAME: ${PKI_ORG_NAME:-Pretium Synergy Ltd.}
       PKI_ROOT_CA_CN: ${PKI_ROOT_CA_CN:-Pretium Synergy Ltd. Root CA}
       PKI_USER_CA_CN: ${PKI_USER_CA_CN:-Pretium Synergy Ltd. User CA}
+      JWT_SECRET: ${JWT_SECRET}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
@@ -106,6 +109,7 @@ services:
       JWT_SECRET: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
       ORG_NAME: ${ORG_NAME:-My CPO}
+      CHARGE_APP_URL: ${CHARGE_APP_URL:-https://app.cpo.pretiumsynergy.co.uk}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
@@ -127,6 +131,10 @@ services:
       OCPP_CORE_API: http://ocpp-core:8000
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
       SKIN: ${SKIN:-default}
+      MANAGEMENT_API_KEY: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
+      CARTO_BASEMAP_KEY: ${CARTO_BASEMAP_KEY:-}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: "true"
 
   # ── Compliance Tester ─────────────────────────────────────────────────────
 
